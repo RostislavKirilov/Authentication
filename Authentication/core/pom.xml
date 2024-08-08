@@ -23,6 +23,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.tinqinacademy.authentication.persistence</groupId>
             <artifactId>persistence</artifactId>
             <version>${revision}</version>

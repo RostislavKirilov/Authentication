@@ -1,0 +1,15 @@
+com\tinqinacademy\authentication\operations\promote\output\PromoteOutput.class
+com\tinqinacademy\authentication\operations\logout\input\LogoutInput.class
+com\tinqinacademy\authentication\operations\register\output\RegisterOutput$RegisterOutputBuilder.class
+com\tinqinacademy\authentication\operations\login\output\LoginOutput.class
+com\tinqinacademy\authentication\operations\register\input\RegisterInput$RegisterInputBuilder.class
+com\tinqinacademy\authentication\operations\demote\input\DemoteInput.class
+com\tinqinacademy\authentication\operations\promote\input\PromoteInput.class
+com\tinqinacademy\authentication\operations\register\output\RegisterOutput.class
+com\tinqinacademy\authentication\operations\register\input\RegisterInput.class
+com\tinqinacademy\authentication\operations\login\output\LoginOutput$LoginOutputBuilder.class
+com\tinqinacademy\authentication\util\JwtTokenUtil.class
+com\tinqinacademy\authentication\services\AuthenticationService.class
+com\tinqinacademy\authentication\operations\demote\output\DemoteOutput.class
+com\tinqinacademy\authentication\operations\login\input\LoginInput$LoginInputBuilder.class
+com\tinqinacademy\authentication\operations\login\input\LoginInput.class
