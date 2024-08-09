@@ -1,1 +1,2 @@
-com\tinqinacademy\authentication\Main.class
+com\tinqinacademy\authentication\core\services\EmailService.class
+com\tinqinacademy\authentication\core\services\AuthenticationService.class

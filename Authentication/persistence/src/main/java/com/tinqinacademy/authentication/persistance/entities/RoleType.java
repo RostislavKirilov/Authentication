@@ -4,6 +4,8 @@ import com.tinqinacademy.authentication.persistance.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,8 +17,8 @@ import lombok.*;
 public class RoleType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)

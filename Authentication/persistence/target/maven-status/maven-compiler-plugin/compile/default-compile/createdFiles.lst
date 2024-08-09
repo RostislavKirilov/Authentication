@@ -1,1 +1,6 @@
-com\tinqinacademy\authentication\Main.class
+com\tinqinacademy\authentication\persistance\entities\User$UserBuilder.class
+com\tinqinacademy\authentication\persistance\entities\RoleType$RoleTypeBuilder.class
+com\tinqinacademy\authentication\persistance\enums\Role.class
+com\tinqinacademy\authentication\persistance\entities\RoleType.class
+com\tinqinacademy\authentication\persistance\repositories\UserRepository.class
+com\tinqinacademy\authentication\persistance\entities\User.class

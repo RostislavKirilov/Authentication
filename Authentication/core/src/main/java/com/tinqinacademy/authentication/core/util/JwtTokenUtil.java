@@ -1,4 +1,4 @@
-package com.tinqinacademy.authentication.api.util;
+package com.tinqinacademy.authentication.core.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -24,12 +24,13 @@ public class JwtTokenUtil {
     //BASE64 - декодира ключа от пропъртитата
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(keyBytes); // преобразува декодираното в ключ, с който
+        return Keys.hmacShaKeyFor(keyBytes); // преобразува декодираното в ключ
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String userId) {
         return Jwts.builder()
-                .subject(username)
+                .claim("userId", userId)
+                .claim("username", username)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 300000))
                 .signWith(getSignInKey(), Jwts.SIG.HS256)

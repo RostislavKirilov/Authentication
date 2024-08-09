@@ -1,1 +1,5 @@
-C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\AuthenticationApplication.java
+C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\rest\AuthenticationApplication.java
+C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\rest\config\JwtAuthenticationFilter.java
+C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\rest\config\SecurityConfig.java
+C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\rest\config\SwaggerConfig.java
+C:\Users\35989\Documents\Authentication\Authentication\rest\src\main\java\com\tinqinacademy\authentication\rest\controllers\AuthenticationController.java
