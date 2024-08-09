@@ -1,1 +1,5 @@
-com\tinqinacademy\authentication\AuthenticationApplication.class
+com\tinqinacademy\authentication\rest\config\JwtAuthenticationFilter.class
+com\tinqinacademy\authentication\rest\controllers\AuthenticationController.class
+com\tinqinacademy\authentication\rest\AuthenticationApplication.class
+com\tinqinacademy\authentication\rest\config\SwaggerConfig.class
+com\tinqinacademy\authentication\rest\config\SecurityConfig.class
