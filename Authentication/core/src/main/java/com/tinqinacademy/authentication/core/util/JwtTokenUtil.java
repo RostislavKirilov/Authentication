@@ -59,4 +59,13 @@ public class JwtTokenUtil {
         String username = claims.getSubject();
         return new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
     }
+
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("role", String.class);
+    }
 }

@@ -24,19 +24,6 @@ public class AuthenticationService {
     private final UserRepository userRepository;
 
     private final BCryptPasswordEncoder passwordEncoder;
-
-//    public String authenticate(String username, String password) {
-//        try {
-//            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//            if (passwordEncoder.matches(password, userDetails.getPassword())) {
-//                return jwtTokenUtil.generateToken(username);
-//            }
-//        } catch (UsernameNotFoundException e) {
-//            // Handle user not found
-//        }
-//        return null;
-//    }
-
     public String authenticate(String username, String password) {
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
