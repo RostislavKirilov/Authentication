@@ -1,11 +1,17 @@
 package com.tinqinacademy.authentication.rest.controllers;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
+import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutput;
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
+import com.tinqinacademy.authentication.api.operations.promote.input.PromoteInput;
+import com.tinqinacademy.authentication.api.operations.promote.output.PromoteOutput;
 import com.tinqinacademy.authentication.api.operations.register.input.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.output.RegisterOutput;
 import com.tinqinacademy.authentication.api.operations.login.input.LoginInput;
+import com.tinqinacademy.authentication.core.operations.DemoteOperationProcessor;
 import com.tinqinacademy.authentication.core.operations.LoginOperationProcessor;
+import com.tinqinacademy.authentication.core.operations.PromoteOperationProcessor;
 import com.tinqinacademy.authentication.core.services.AuthenticationService;
 import com.tinqinacademy.authentication.core.services.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,9 +38,8 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final EmailService emailService;
     private final LoginOperationProcessor loginOperationProcessor;
-
-
-
+    private final PromoteOperationProcessor promoteOperationProcessor;
+    private final DemoteOperationProcessor demoteOperationProcessor;
     @PostMapping("/auth/login")
     @Operation(summary = "Log in and get a JWT token")
     public ResponseEntity<Void> login(@RequestBody @Valid LoginInput loginInput) {
@@ -72,6 +77,32 @@ public class AuthenticationController {
                 .build();
 
         return ResponseEntity.ok(registerOutput);
+    }
+
+    @PostMapping("/auth/promote")
+    @Operation(summary = "Promote a user to ADMIN")
+    public ResponseEntity<String> promoteUser(@RequestBody @Valid PromoteInput promoteInput) {
+        log.info("Attempting to promote user with ID: {}", promoteInput.getUserId());
+
+        Either<Errors, PromoteOutput> result = promoteOperationProcessor.process(promoteInput);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getMessage()),
+                promoteOutput -> ResponseEntity.ok(promoteOutput.getMessage())
+        );
+    }
+
+    @PostMapping("/auth/demote")
+    @Operation(summary = "Demote an admin to USER")
+    public ResponseEntity<String> demoteUser(@RequestBody @Valid DemoteInput demoteInput) {
+        log.info("Attempting to demote user with ID: {}", demoteInput.getUserId());
+
+        Either<Errors, DemoteOutput> result = demoteOperationProcessor.process(demoteInput);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getMessage()),
+                demoteOutput -> ResponseEntity.ok(demoteOutput.getMessage())
+        );
     }
 }
 
