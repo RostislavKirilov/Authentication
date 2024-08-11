@@ -1,6 +1,8 @@
 package com.tinqinacademy.authentication.rest.controllers;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.operations.confirmreg.input.ConfirmInput;
+import com.tinqinacademy.authentication.api.operations.confirmreg.output.ConfirmOutput;
 import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutput;
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
@@ -57,6 +59,28 @@ public class AuthenticationController {
         );
     }
 
+//    @PostMapping("/auth/register")
+//    @Operation(summary = "Register a new user and save to database")
+//    public ResponseEntity<RegisterOutput> registerUser(@RequestBody @Valid RegisterInput registerInput) {
+//        log.info("Attempting to register user with username: {}", registerInput.getUsername());
+//
+//        UUID userId = authenticationService.registerUser(
+//                registerInput.getUsername(),
+//                registerInput.getPassword(),
+//                registerInput.getEmail()
+//        );
+//
+//        if (userId == null) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+//        }
+//
+//        RegisterOutput registerOutput = RegisterOutput.builder()
+//                .userId(userId.toString())
+//                .build();
+//
+//        return ResponseEntity.ok(registerOutput);
+//    }
+
     @PostMapping("/auth/register")
     @Operation(summary = "Register a new user and save to database")
     public ResponseEntity<RegisterOutput> registerUser(@RequestBody @Valid RegisterInput registerInput) {
@@ -72,11 +96,30 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
+        String confirmationCode = UUID.randomUUID().toString();
+        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
+        authenticationService.updateUserWithConfirmationCode(userId, confirmationCode, expiryTime);
+
+        emailService.sendRegistrationEmail(registerInput.getEmail(), confirmationCode);
+
         RegisterOutput registerOutput = RegisterOutput.builder()
                 .userId(userId.toString())
                 .build();
 
         return ResponseEntity.ok(registerOutput);
+    }
+
+    @PostMapping("/auth/confirm")
+    @Operation(summary = "Confirm registration with a code")
+    public ResponseEntity<String> confirmRegistration(@RequestBody @Valid ConfirmInput confirmInput) {
+        log.info("Attempting to confirm registration with code: {}", confirmInput.getCCode());
+
+        Either<Errors, ConfirmOutput> result = authenticationService.confirmRegistration(confirmInput);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getMessage()),
+                confirmOutput -> ResponseEntity.ok(confirmOutput.getMessage())
+        );
     }
 
     @PostMapping("/auth/promote")

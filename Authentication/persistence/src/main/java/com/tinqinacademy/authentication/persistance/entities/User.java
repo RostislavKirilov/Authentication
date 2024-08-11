@@ -42,6 +42,15 @@ public class User {
     @Column(nullable = false)
     private Role role = Role.USER;
 
+    @Column(nullable = false)
+    private boolean confirmed = false;
+
+    @Column
+    private String confirmationCode;
+
+    @Column
+    private long confirmationExpiry;
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
     }

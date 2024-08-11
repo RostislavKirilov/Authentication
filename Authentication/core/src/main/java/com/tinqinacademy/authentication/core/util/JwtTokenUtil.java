@@ -62,10 +62,13 @@ public class JwtTokenUtil {
 
     public String getRoleFromToken(String token) {
         Claims claims = Jwts.parser()
-                .verifyWith(getSignInKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get("role", String.class);
+
+        String role = claims.get("role", String.class);
+        System.out.println("Extracted role: " + role); // Лог на извлечената роля
+        return role;
     }
+
 }
