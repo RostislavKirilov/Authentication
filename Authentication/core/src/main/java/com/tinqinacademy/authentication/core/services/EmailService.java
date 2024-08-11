@@ -13,12 +13,12 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendRegistrationEmail(String to, String userId) {
+    public void sendRegistrationEmail(String to, String confirmationCode) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("hotel@tinqin.com");
         message.setTo(to);
         message.setSubject("Registration Confirmation");
-        message.setText("Thank you for registering. Your user ID is " + userId);
+        message.setText("Thank you for registering. Please use the following code to confirm your email: " + confirmationCode);
 
         mailSender.send(message);
     }
