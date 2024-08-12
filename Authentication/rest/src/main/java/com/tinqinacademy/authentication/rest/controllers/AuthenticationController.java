@@ -1,6 +1,8 @@
 package com.tinqinacademy.authentication.rest.controllers;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.operations.changepassword.input.ChangePassInput;
+import com.tinqinacademy.authentication.api.operations.changepassword.output.ChangePassOutput;
 import com.tinqinacademy.authentication.api.operations.confirmreg.input.ConfirmInput;
 import com.tinqinacademy.authentication.api.operations.confirmreg.output.ConfirmOutput;
 import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
@@ -8,6 +10,8 @@ import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutpu
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
 import com.tinqinacademy.authentication.api.operations.promote.input.PromoteInput;
 import com.tinqinacademy.authentication.api.operations.promote.output.PromoteOutput;
+import com.tinqinacademy.authentication.api.operations.recoverpass.input.RecoverPassInput;
+import com.tinqinacademy.authentication.api.operations.recoverpass.output.RecoverPassOutput;
 import com.tinqinacademy.authentication.api.operations.register.input.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.output.RegisterOutput;
 import com.tinqinacademy.authentication.api.operations.login.input.LoginInput;
@@ -16,6 +20,7 @@ import com.tinqinacademy.authentication.core.operations.LoginOperationProcessor;
 import com.tinqinacademy.authentication.core.operations.PromoteOperationProcessor;
 import com.tinqinacademy.authentication.core.services.AuthenticationService;
 import com.tinqinacademy.authentication.core.services.EmailService;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.vavr.control.Either;
 import jakarta.validation.Valid;
@@ -27,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -42,6 +48,7 @@ public class AuthenticationController {
     private final LoginOperationProcessor loginOperationProcessor;
     private final PromoteOperationProcessor promoteOperationProcessor;
     private final DemoteOperationProcessor demoteOperationProcessor;
+    private final JwtTokenProvider jwtTokenProvider;
     @PostMapping("/auth/login")
     @Operation(summary = "Log in and get a JWT token")
     public ResponseEntity<Void> login(@RequestBody @Valid LoginInput loginInput) {
@@ -58,29 +65,6 @@ public class AuthenticationController {
                 }
         );
     }
-
-//    @PostMapping("/auth/register")
-//    @Operation(summary = "Register a new user and save to database")
-//    public ResponseEntity<RegisterOutput> registerUser(@RequestBody @Valid RegisterInput registerInput) {
-//        log.info("Attempting to register user with username: {}", registerInput.getUsername());
-//
-//        UUID userId = authenticationService.registerUser(
-//                registerInput.getUsername(),
-//                registerInput.getPassword(),
-//                registerInput.getEmail()
-//        );
-//
-//        if (userId == null) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-//        }
-//
-//        RegisterOutput registerOutput = RegisterOutput.builder()
-//                .userId(userId.toString())
-//                .build();
-//
-//        return ResponseEntity.ok(registerOutput);
-//    }
-
     @PostMapping("/auth/register")
     @Operation(summary = "Register a new user and save to database")
     public ResponseEntity<RegisterOutput> registerUser(@RequestBody @Valid RegisterInput registerInput) {
@@ -145,6 +129,32 @@ public class AuthenticationController {
         return result.fold(
                 errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getMessage()),
                 demoteOutput -> ResponseEntity.ok(demoteOutput.getMessage())
+        );
+    }
+
+    @PostMapping("/recover-password")
+    @Operation(summary = "Recover password by email")
+    public ResponseEntity<RecoverPassOutput> recoverPassword( @RequestBody @Valid RecoverPassInput recoverPassInput) {
+        Either<Errors, RecoverPassOutput> result = authenticationService.recoverPassword(recoverPassInput);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.OK).body(RecoverPassOutput.builder().message(errors.getMessage()).build()),
+                ResponseEntity::ok
+        );
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ChangePassOutput> changePassword(@RequestHeader("Authorization") String token, @RequestBody @Valid ChangePassInput changePassInput) {
+        String jwtToken = token.replace("Bearer ", "");
+
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ChangePassOutput.builder().message("Invalid token").build());
+        }
+        Either<Errors, ChangePassOutput> result = authenticationService.changePassword(changePassInput, jwtToken);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ChangePassOutput.builder().message(errors.getMessage()).build()),
+                ResponseEntity::ok
         );
     }
 }
