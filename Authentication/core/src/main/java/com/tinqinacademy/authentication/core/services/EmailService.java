@@ -22,4 +22,14 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    public void sendNewPasswordEmail(String to, String newPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("hotel@tinqin.com");
+        message.setTo(to);
+        message.setSubject("Password Recovery");
+        message.setText("Your new password is: " + newPassword);
+
+        mailSender.send(message);
+    }
 }

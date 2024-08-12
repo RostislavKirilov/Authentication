@@ -7,7 +7,7 @@ import com.tinqinacademy.authentication.api.operations.login.input.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.operation.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
 import com.tinqinacademy.authentication.core.services.CustomUserDetails;
-import com.tinqinacademy.authentication.core.util.JwtTokenUtil;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.validation.Validator;
@@ -27,14 +27,14 @@ import java.util.List;
 public class LoginOperationProcessor extends BaseOperation implements LoginOperation {
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
 
-    protected LoginOperationProcessor( Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil ) {
+    protected LoginOperationProcessor( Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider ) {
         super(validator, conversionService, errorMapper);
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
 
@@ -61,7 +61,7 @@ public class LoginOperationProcessor extends BaseOperation implements LoginOpera
     }
 
     private String generateJwtToken(String username, String userId) {
-        return jwtTokenUtil.generateToken(username, userId);
+        return jwtTokenProvider.generateToken(username, userId);
     }
 
     private Errors mapExceptionToErrors(Throwable throwable) {

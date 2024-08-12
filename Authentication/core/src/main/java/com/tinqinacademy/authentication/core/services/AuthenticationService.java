@@ -1,14 +1,19 @@
 package com.tinqinacademy.authentication.core.services;
 
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.operations.changepassword.input.ChangePassInput;
+import com.tinqinacademy.authentication.api.operations.changepassword.output.ChangePassOutput;
 import com.tinqinacademy.authentication.api.operations.confirmreg.input.ConfirmInput;
 import com.tinqinacademy.authentication.api.operations.confirmreg.output.ConfirmOutput;
-import com.tinqinacademy.authentication.core.util.JwtTokenUtil;
+import com.tinqinacademy.authentication.api.operations.recoverpass.input.RecoverPassInput;
+import com.tinqinacademy.authentication.api.operations.recoverpass.output.RecoverPassOutput;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import com.tinqinacademy.authentication.persistance.entities.User;
 import com.tinqinacademy.authentication.persistance.enums.Role;
 import com.tinqinacademy.authentication.persistance.repositories.UserRepository;
 import io.vavr.control.Either;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,11 +28,14 @@ public class AuthenticationService {
 
     private final CustomUserDetailsService userDetailsService;
 
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
     private final UserRepository userRepository;
 
     private final BCryptPasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
+
     public String authenticate(String username, String password) {
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -35,7 +43,7 @@ public class AuthenticationService {
                 Optional<User> userOptional = userRepository.findByUsername(username);
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
-                    return jwtTokenUtil.generateToken(username, user.getId().toString());
+                    return jwtTokenProvider.generateToken(username, user.getId().toString());
                 }
             }
         } catch (UsernameNotFoundException e) {
@@ -86,6 +94,63 @@ public class AuthenticationService {
         userRepository.save(user);
 
         return Either.right(ConfirmOutput.builder().message("Email confirmed successfully").build());
+    }
+
+    public Either<Errors, RecoverPassOutput> recoverPassword( RecoverPassInput recoverPassInput) {
+        Optional<User> userOptional = userRepository.findByEmail(recoverPassInput.getEmail());
+
+        if (userOptional.isEmpty()) {
+            return Either.right(RecoverPassOutput.builder()
+                    .message("If an account with this email exists, a new password has been sent.")
+                    .build());
+        }
+
+        User user = userOptional.get();
+
+        String newPassword = PasswordGenerator.generateRandomPassword();
+
+        // Криптирам
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+
+        // Изпращам
+        emailService.sendNewPasswordEmail(user.getEmail(), newPassword);
+
+        return Either.right(RecoverPassOutput.builder()
+                .message("If an account with this email exists, a new password has been sent.")
+                .build());
+    }
+
+    public Either<Errors, ChangePassOutput> changePassword(ChangePassInput changePassInput, String token) {
+        if (!jwtTokenProvider.validateToken(token)) {
+            return Either.left(new Errors("Invalid token."));
+        }
+
+        Authentication authentication = jwtTokenProvider.getAuthentication(token);
+        String username = authentication.getName();
+
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            return Either.left(new Errors("User not found."));
+        }
+
+        User user = userOptional.get();
+
+        if (!user.getEmail().equals(changePassInput.getEmail())) {
+            return Either.left(new Errors("Email does not match the logged in user."));
+        }
+
+        if (!passwordEncoder.matches(changePassInput.getOldPassword(), user.getPassword())) {
+            return Either.left(new Errors("Old password is incorrect."));
+        }
+
+        user.setPassword(passwordEncoder.encode(changePassInput.getNewPassword()));
+        userRepository.save(user);
+
+        return Either.right(ChangePassOutput.builder()
+                .message("Password successfully changed.")
+                .build());
     }
 
 }

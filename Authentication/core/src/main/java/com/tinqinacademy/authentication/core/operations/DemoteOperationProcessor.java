@@ -6,7 +6,7 @@ import com.tinqinacademy.authentication.api.errors.Errors;
 import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.operation.DemoteOperation;
 import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutput;
-import com.tinqinacademy.authentication.core.util.JwtTokenUtil;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import io.vavr.control.Either;
 import jakarta.validation.Validator;
 import org.springframework.core.convert.ConversionService;
@@ -26,12 +26,12 @@ import java.util.UUID;
 public class DemoteOperationProcessor extends BaseOperation implements DemoteOperation {
 
     private final UserRepository userRepository;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    protected DemoteOperationProcessor(Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserRepository userRepository, JwtTokenUtil jwtTokenUtil) {
+    protected DemoteOperationProcessor(Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserRepository userRepository, JwtTokenProvider jwtTokenProvider ) {
         super(validator, conversionService, errorMapper);
         this.userRepository = userRepository;
-        this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
