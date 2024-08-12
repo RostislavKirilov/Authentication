@@ -1,6 +1,6 @@
 package com.tinqinacademy.authentication.rest.config;
 
-import com.tinqinacademy.authentication.core.util.JwtTokenUtil;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,10 +19,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public SecurityConfig ( JwtTokenUtil jwtTokenUtil ) {
-        this.jwtTokenUtil = jwtTokenUtil;
+    public SecurityConfig ( JwtTokenProvider jwtTokenProvider ) {
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Bean
@@ -41,7 +41,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(AuthenticationManager authenticationManager) {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenUtil);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtTokenProvider);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }

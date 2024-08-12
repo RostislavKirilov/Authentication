@@ -1,6 +1,6 @@
 package com.tinqinacademy.authentication.rest.config;
 
-import com.tinqinacademy.authentication.core.util.JwtTokenUtil;
+import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -16,14 +16,14 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtTokenProvider jwtTokenProvider;
     @Bean
     public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    public JwtAuthenticationFilter ( JwtTokenUtil jwtTokenUtil ) {
-        this.jwtTokenUtil = jwtTokenUtil;
+    public JwtAuthenticationFilter ( JwtTokenProvider jwtTokenProvider ) {
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-            if (jwtTokenUtil.validateToken(token)) {
-                SecurityContextHolder.getContext().setAuthentication(jwtTokenUtil.getAuthentication(token));
+            if (jwtTokenProvider.validateToken(token)) {
+                SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(token));
             }
         }
 
