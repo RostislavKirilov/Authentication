@@ -15,13 +15,13 @@ import com.tinqinacademy.authentication.api.operations.recoverpass.output.Recove
 import com.tinqinacademy.authentication.api.operations.register.input.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.output.RegisterOutput;
 import com.tinqinacademy.authentication.api.operations.login.input.LoginInput;
-import com.tinqinacademy.authentication.core.operations.DemoteOperationProcessor;
-import com.tinqinacademy.authentication.core.operations.LoginOperationProcessor;
-import com.tinqinacademy.authentication.core.operations.PromoteOperationProcessor;
+import com.tinqinacademy.authentication.core.operations.*;
 import com.tinqinacademy.authentication.core.services.AuthenticationService;
-import com.tinqinacademy.authentication.core.services.EmailService;
 import com.tinqinacademy.authentication.core.util.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.vavr.control.Either;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +34,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
-
 @RequiredArgsConstructor
 @Validated
 @RestController
@@ -44,11 +41,12 @@ import java.util.UUID;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final EmailService emailService;
     private final LoginOperationProcessor loginOperationProcessor;
     private final PromoteOperationProcessor promoteOperationProcessor;
     private final DemoteOperationProcessor demoteOperationProcessor;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RegisterOperationProcessor registerOperationProcessor;
+    private final RecoverPassOperationProcessor recoverPassOperationProcessor;
     @PostMapping("/auth/login")
     @Operation(summary = "Log in and get a JWT token")
     public ResponseEntity<Void> login(@RequestBody @Valid LoginInput loginInput) {
@@ -70,27 +68,12 @@ public class AuthenticationController {
     public ResponseEntity<RegisterOutput> registerUser(@RequestBody @Valid RegisterInput registerInput) {
         log.info("Attempting to register user with username: {}", registerInput.getUsername());
 
-        UUID userId = authenticationService.registerUser(
-                registerInput.getUsername(),
-                registerInput.getPassword(),
-                registerInput.getEmail()
+        Either<Errors, RegisterOutput> result = registerOperationProcessor.process(registerInput);
+
+        return result.fold(
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null),
+                ResponseEntity::ok
         );
-
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-
-        String confirmationCode = UUID.randomUUID().toString();
-        long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
-        authenticationService.updateUserWithConfirmationCode(userId, confirmationCode, expiryTime);
-
-        emailService.sendRegistrationEmail(registerInput.getEmail(), confirmationCode);
-
-        RegisterOutput registerOutput = RegisterOutput.builder()
-                .userId(userId.toString())
-                .build();
-
-        return ResponseEntity.ok(registerOutput);
     }
 
     @PostMapping("/auth/confirm")
@@ -108,7 +91,7 @@ public class AuthenticationController {
 
     @PostMapping("/auth/promote")
     @Operation(summary = "Promote a user to ADMIN")
-    public ResponseEntity<String> promoteUser(@RequestBody @Valid PromoteInput promoteInput) {
+    public ResponseEntity<?> promoteUser(@RequestBody @Valid PromoteInput promoteInput) {
         log.info("Attempting to promote user with ID: {}", promoteInput.getUserId());
 
         Either<Errors, PromoteOutput> result = promoteOperationProcessor.process(promoteInput);
@@ -121,21 +104,22 @@ public class AuthenticationController {
 
     @PostMapping("/auth/demote")
     @Operation(summary = "Demote an admin to USER")
-    public ResponseEntity<String> demoteUser(@RequestBody @Valid DemoteInput demoteInput) {
+    @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Errors.class)))
+    public ResponseEntity<?> demoteUser(@RequestBody @Valid DemoteInput demoteInput) {
         log.info("Attempting to demote user with ID: {}", demoteInput.getUserId());
 
         Either<Errors, DemoteOutput> result = demoteOperationProcessor.process(demoteInput);
 
         return result.fold(
-                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getMessage()),
+                errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors),  // Връщане на целия Errors обект
                 demoteOutput -> ResponseEntity.ok(demoteOutput.getMessage())
         );
     }
 
     @PostMapping("/recover-password")
     @Operation(summary = "Recover password by email")
-    public ResponseEntity<RecoverPassOutput> recoverPassword( @RequestBody @Valid RecoverPassInput recoverPassInput) {
-        Either<Errors, RecoverPassOutput> result = authenticationService.recoverPassword(recoverPassInput);
+    public ResponseEntity<RecoverPassOutput> recoverPassword(@RequestBody @Valid RecoverPassInput recoverPassInput) {
+        Either<Errors, RecoverPassOutput> result = recoverPassOperationProcessor.process(recoverPassInput);
 
         return result.fold(
                 errors -> ResponseEntity.status(HttpStatus.OK).body(RecoverPassOutput.builder().message(errors.getMessage()).build()),

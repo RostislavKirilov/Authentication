@@ -3,6 +3,7 @@ package com.tinqinacademy.authentication.core.operations;
 import com.tinqinacademy.authentication.api.base.BaseOperation;
 import com.tinqinacademy.authentication.api.errors.ErrorMapper;
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.exceptions.DemoteUserException;
 import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.operation.DemoteOperation;
 import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutput;
@@ -71,6 +72,9 @@ public class DemoteOperationProcessor extends BaseOperation implements DemoteOpe
         Optional<User> userOptional = userRepository.findById(UUID.fromString(input.getUserId()));
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+            if (user.getRole() == Role.USER) {
+                throw new DemoteUserException();  // Хвърляне на грешка, ако потребителят вече е USER
+            }
             user.setRole(Role.USER);
             userRepository.save(user);
         } else {
@@ -81,6 +85,8 @@ public class DemoteOperationProcessor extends BaseOperation implements DemoteOpe
     private Errors mapExceptionToErrors(Throwable throwable) {
         if (throwable instanceof IllegalArgumentException) {
             return createError("Invalid input: " + throwable.getMessage());
+        } else if (throwable instanceof DemoteUserException) {
+            return createError(throwable.getMessage());
         } else {
             log.error("Unexpected error during demotion", throwable);
             return createError("Unexpected error");
