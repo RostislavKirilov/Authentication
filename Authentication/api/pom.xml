@@ -4,14 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tinqinacademy</groupId>
+        <groupId>com.tinqinacademy.authentication</groupId>
         <artifactId>Authentication</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <groupId>com.tinqinacademy.authentication.api</groupId>
     <artifactId>api</artifactId>
-    <version>${revision}</version>
 
     <dependencies>
         <dependency>

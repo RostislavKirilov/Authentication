@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.tinqinacademy</groupId>
+    <groupId>com.tinqinacademy.authentication</groupId>
     <artifactId>Authentication</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -23,6 +23,7 @@
         <module>persistence</module>
         <module>domain</module>
         <module>rest</module>
+        <module>restexport</module>
     </modules>
 
     <properties>
