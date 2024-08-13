@@ -4,19 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tinqinacademy</groupId>
+        <groupId>com.tinqinacademy.authentication</groupId>
         <artifactId>Authentication</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <groupId>com.tinqinacademy.authentication.core</groupId>
     <artifactId>core</artifactId>
-    <version>${revision}</version>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.tinqinacademy.authentication.api</groupId>
+            <groupId>com.tinqinacademy.authentication</groupId>
             <artifactId>api</artifactId>
             <version>${revision}</version>
             <scope>compile</scope>
@@ -29,14 +27,14 @@
         </dependency>
 
         <dependency>
-            <groupId>com.tinqinacademy.authentication.persistence</groupId>
+            <groupId>com.tinqinacademy.authentication</groupId>
             <artifactId>persistence</artifactId>
             <version>${revision}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.tinqinacademy.authentication.domain</groupId>
+            <groupId>com.tinqinacademy.authentication</groupId>
             <artifactId>domain</artifactId>
             <version>${revision}</version>
             <scope>compile</scope>

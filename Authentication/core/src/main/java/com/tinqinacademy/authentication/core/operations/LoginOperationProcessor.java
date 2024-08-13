@@ -3,6 +3,11 @@ package com.tinqinacademy.authentication.core.operations;
 import com.tinqinacademy.authentication.api.base.BaseOperation;
 import com.tinqinacademy.authentication.api.errors.ErrorMapper;
 import com.tinqinacademy.authentication.api.errors.Errors;
+import com.tinqinacademy.authentication.api.exceptions.InvalidInputException;
+import com.tinqinacademy.authentication.api.exceptions.EmailNotFoundException;
+import com.tinqinacademy.authentication.api.messages.ExceptionMessages;
+import com.tinqinacademy.authentication.api.exceptions.PasswordUsernameException;
+import com.tinqinacademy.authentication.api.exceptions.UserNotFoundException;
 import com.tinqinacademy.authentication.api.operations.login.input.LoginInput;
 import com.tinqinacademy.authentication.api.operations.login.operation.LoginOperation;
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
@@ -16,40 +21,55 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import java.util.Map;
+import java.util.function.Function;
+import jakarta.annotation.PostConstruct;
+
 @Service
 @Slf4j
 public class LoginOperationProcessor extends BaseOperation implements LoginOperation {
+
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private Map<Class<? extends Throwable>, Function<Throwable, Errors>> exceptionMappings;
 
-    protected LoginOperationProcessor( Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider ) {
+    protected LoginOperationProcessor(Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserDetailsService userDetailsService, BCryptPasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
         super(validator, conversionService, errorMapper);
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    @PostConstruct
+    private void initExceptionMappings() {
+        exceptionMappings = Map.of(
+                UserNotFoundException.class, ex -> createError(ExceptionMessages.USER_NOT_FOUND),
+                EmailNotFoundException.class, ex -> createError(ExceptionMessages.EMAIL_NOT_FOUND),
+                PasswordUsernameException.class, ex -> createError(ExceptionMessages.WRONG_PASSWORD_USERNAME),
+                InvalidInputException.class, ex -> createError(ExceptionMessages.INVALID_DATA_INPUT),
+                AuthenticationException.class, ex -> createError("Authentication failed")
+        );
+    }
 
     @Override
     public Either<Errors, LoginOutput> process(LoginInput input) {
         return Try.of(() -> {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(input.getUsername());
                     if (!(userDetails instanceof CustomUserDetails)) {
-                        throw new AuthenticationException("Invalid UserDetails instance") {};
+                        throw new UserNotFoundException();
                     }
 
                     CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
 
                     if (!passwordEncoder.matches(input.getPassword(), customUserDetails.getPassword())) {
-                        throw new AuthenticationException("Invalid password") {};
+                        throw new PasswordUsernameException();
                     }
 
                     String userId = customUserDetails.getUserId().toString();
@@ -65,14 +85,12 @@ public class LoginOperationProcessor extends BaseOperation implements LoginOpera
     }
 
     private Errors mapExceptionToErrors(Throwable throwable) {
-        if (throwable instanceof UsernameNotFoundException) {
-            return createError("Username not found");
-        } else if (throwable instanceof AuthenticationException) {
-            return createError("Authentication failed");
-        } else {
-            log.error("Unexpected error during login", throwable);
-            return createError("Unexpected error");
-        }
+        return exceptionMappings
+                .getOrDefault(throwable.getClass(), ex -> {
+                    log.error("Unexpected error during login", throwable);
+                    return createError("Unexpected error");
+                })
+                .apply(throwable);
     }
 
     private Errors createError(String message) {

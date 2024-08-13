@@ -1,5 +1,6 @@
 package com.tinqinacademy.authentication.api.operations.register.input;
 
+import com.tinqinacademy.authentication.api.base.OperationInput;
 import lombok.*;
 
 @Getter
@@ -8,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @Builder
-public class RegisterInput {
+public class RegisterInput implements OperationInput {
 
     private String username;
     private String password;
