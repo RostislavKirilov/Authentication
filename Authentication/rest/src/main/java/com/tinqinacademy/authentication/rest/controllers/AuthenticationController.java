@@ -48,8 +48,11 @@ public class AuthenticationController {
     private final JwtTokenProvider jwtTokenProvider;
     private final RegisterOperationProcessor registerOperationProcessor;
     private final RecoverPassOperationProcessor recoverPassOperationProcessor;
+
     private final ChangePassOperationProcessor changePassOperationProcessor;
     private final LogoutOperationProcessor logoutOperationProcessor;
+
+
     @PostMapping("/auth/login")
     @Operation(summary = "Log in and get a JWT token")
     public ResponseEntity<Void> login(@RequestBody @Valid LoginInput loginInput) {
