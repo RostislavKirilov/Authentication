@@ -12,4 +12,8 @@ import lombok.*;
 public class RegisterOutput implements OperationOutput {
 
     private String userId;
+
+    private String message () {
+        return "Registered!";
+    }
 }

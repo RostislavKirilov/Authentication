@@ -8,6 +8,8 @@ import com.tinqinacademy.authentication.api.operations.confirmreg.output.Confirm
 import com.tinqinacademy.authentication.api.operations.demote.input.DemoteInput;
 import com.tinqinacademy.authentication.api.operations.demote.output.DemoteOutput;
 import com.tinqinacademy.authentication.api.operations.login.output.LoginOutput;
+import com.tinqinacademy.authentication.api.operations.logout.input.LogoutInput;
+import com.tinqinacademy.authentication.api.operations.logout.output.LogoutOutput;
 import com.tinqinacademy.authentication.api.operations.promote.input.PromoteInput;
 import com.tinqinacademy.authentication.api.operations.promote.output.PromoteOutput;
 import com.tinqinacademy.authentication.api.operations.recoverpass.input.RecoverPassInput;
@@ -32,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Validated
@@ -47,6 +48,11 @@ public class AuthenticationController {
     private final JwtTokenProvider jwtTokenProvider;
     private final RegisterOperationProcessor registerOperationProcessor;
     private final RecoverPassOperationProcessor recoverPassOperationProcessor;
+
+    private final ChangePassOperationProcessor changePassOperationProcessor;
+    private final LogoutOperationProcessor logoutOperationProcessor;
+
+
     @PostMapping("/auth/login")
     @Operation(summary = "Log in and get a JWT token")
     public ResponseEntity<Void> login(@RequestBody @Valid LoginInput loginInput) {
@@ -128,19 +134,61 @@ public class AuthenticationController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<ChangePassOutput> changePassword(@RequestHeader("Authorization") String token, @RequestBody @Valid ChangePassInput changePassInput) {
-        String jwtToken = token.replace("Bearer ", "");
+    public ResponseEntity<ChangePassOutput> changePassword(@RequestBody @Valid ChangePassInput changePassInput) {
 
-        if (!jwtTokenProvider.validateToken(jwtToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ChangePassOutput.builder().message("Invalid token").build());
-        }
-        Either<Errors, ChangePassOutput> result = authenticationService.changePassword(changePassInput, jwtToken);
+        Either<Errors, ChangePassOutput> result = changePassOperationProcessor.process(changePassInput);
 
         return result.fold(
                 errors -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ChangePassOutput.builder().message(errors.getMessage()).build()),
                 ResponseEntity::ok
         );
     }
+
+    @PostMapping("/auth/validate-token")
+    @Operation(summary = "Validate a JWT token")
+    public ResponseEntity<String> validateToken(String token) {
+        String jwtToken = token.replace("Bearer ", "");
+
+        if (jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.ok("Token is valid");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
+    @PostMapping("/auth/logout")
+    @Operation(summary = "Logout user and blacklist token")
+    public ResponseEntity<LogoutOutput> logout(@RequestBody @Valid LogoutInput logoutInput) {
+        LogoutOutput result = logoutOperationProcessor.process(logoutInput);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/auth/get-username")
+    @Operation(summary = "Get username from JWT token")
+    public ResponseEntity<String> getUsernameFromToken(@RequestBody String token) {
+        String jwtToken = token.replace("Bearer ", "");
+
+        if (jwtTokenProvider.validateToken(jwtToken)) {
+            String username = jwtTokenProvider.getUsernameFromToken(jwtToken);
+            return ResponseEntity.ok(username);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
+
+    @PostMapping("/auth/get-role")
+    @Operation(summary = "Get role from JWT token")
+    public ResponseEntity<String> getRoleFromToken(@RequestBody String token) {
+        String jwtToken = token.replace("Bearer ", "");
+
+        if (jwtTokenProvider.validateToken(jwtToken)) {
+            String role = jwtTokenProvider.getRoleFromToken(jwtToken);
+            return ResponseEntity.ok(role);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
 }
+
 
 
