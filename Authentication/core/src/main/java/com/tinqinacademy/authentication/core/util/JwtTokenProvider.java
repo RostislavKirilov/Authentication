@@ -1,5 +1,6 @@
 package com.tinqinacademy.authentication.core.util;
 
+import com.tinqinacademy.authentication.persistance.repositories.BlacklistedTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -21,33 +22,61 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secret;
 
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+
+    public JwtTokenProvider ( BlacklistedTokenRepository blacklistedTokenRepository ) {
+        this.blacklistedTokenRepository = blacklistedTokenRepository;
+    }
+
+
     //BASE64 - декодира ключа от пропъртитата
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes); // преобразува декодираното в ключ
     }
 
-    public String generateToken(String username, String userId) {
+    public String generateToken(String username, String userId, String role) {
         return Jwts.builder()
                 .claim("userId", userId)
                 .claim("username", username)
+                .claim("role", role) // Добавяне на ролята в токена
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 300000))
+                .setExpiration(new Date(System.currentTimeMillis() + 300000))
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
+//    public boolean validateToken(String token) {
+//        try {
+//            Jwts.parser()
+//                    .verifyWith(getSignInKey())
+//                    .build()
+//                    .parseSignedClaims(token);
+//            return true;
+//        } catch (JwtException | IllegalArgumentException e) {
+//            return false;
+//        }
+//    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(getSignInKey())
+            Claims claims = Jwts.parser()
+                    .setSigningKey(getSignInKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (blacklistedTokenRepository.existsById(token)) {
+                return false;
+            }
+
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
+
+
 
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parser()
@@ -69,6 +98,26 @@ public class JwtTokenProvider {
         String role = claims.get("role", String.class);
         System.out.println("Extracted role: " + role); // Лог на извлечената роля
         return role;
+    }
+
+    public Date getExpirationDateFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getExpiration();
+    }
+
+    public String getUsernameFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("username", String.class);
     }
 
 }

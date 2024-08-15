@@ -9,11 +9,5 @@ import io.vavr.control.Either;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ChangePassOperation implements OperationProcessor<ChangePassInput, ChangePassOutput> {
-
-    @Override
-    public Either<Errors, ChangePassOutput> process(ChangePassInput input) {
-       return null;
-    }
-
+public interface ChangePassOperation extends OperationProcessor<ChangePassInput, ChangePassOutput> {
 }

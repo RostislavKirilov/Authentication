@@ -10,6 +10,7 @@ import org.springframework.core.convert.ConversionService;
 @Setter
 public class BaseOperation {
 
+
     protected final Validator validator;
     protected final ConversionService conversionService;
     protected final ErrorMapper errorMapper;

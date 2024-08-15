@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 @Service
 @Slf4j
 public class DemoteOperationProcessor extends BaseOperation implements DemoteOperation {
@@ -29,7 +28,7 @@ public class DemoteOperationProcessor extends BaseOperation implements DemoteOpe
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    protected DemoteOperationProcessor(Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserRepository userRepository, JwtTokenProvider jwtTokenProvider ) {
+    protected DemoteOperationProcessor(Validator validator, ConversionService conversionService, ErrorMapper errorMapper, UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
         super(validator, conversionService, errorMapper);
         this.userRepository = userRepository;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -39,7 +38,8 @@ public class DemoteOperationProcessor extends BaseOperation implements DemoteOpe
     public Either<Errors, DemoteOutput> process(DemoteInput input) {
         return Try.of(() -> {
                     validateInput(input);
-                    validateAdminRole(); // Проверка дали текущият потребител е администратор
+                    validateAdminRole(); // Проверка дали е администратор
+                    validateFirstAdminRole(); // Проверка дали администраторa е първият администратор
                     demoteUser(input);
                     return DemoteOutput.builder()
                             .message("User demoted to USER successfully.")
@@ -61,10 +61,31 @@ public class DemoteOperationProcessor extends BaseOperation implements DemoteOpe
     }
 
     private void validateAdminRole() {
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByUsername(currentUsername).orElseThrow(() -> new IllegalArgumentException("User not found."));
-        if (currentUser.getRole() != Role.ADMIN) {
+        String token = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+        String role = jwtTokenProvider.getRoleFromToken(token);
+        if (!Role.ADMIN.name().equals(role)) {
             throw new IllegalArgumentException("Only admins can demote users.");
+        }
+    }
+
+    private void validateFirstAdminRole() {
+        String token = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+        String role = jwtTokenProvider.getRoleFromToken(token);
+
+        if (!Role.ADMIN.name().equals(role)) {
+            throw new IllegalArgumentException("Only the first admin can demote other admins.");
+        }
+
+        // Check if there is more than one admin
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+        if (admins.size() > 1) {
+            User currentUser = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+            User firstAdmin = admins.get(0);
+            if (!firstAdmin.getId().equals(currentUser.getId())) {
+                throw new IllegalArgumentException("Only the first admin can demote other admins.");
+            }
         }
     }
 

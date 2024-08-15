@@ -43,7 +43,8 @@ public class AuthenticationService {
                 Optional<User> userOptional = userRepository.findByUsername(username);
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
-                    return jwtTokenProvider.generateToken(username, user.getId().toString());
+                    String role = user.getRole().name();
+                    return jwtTokenProvider.generateToken(username, user.getId().toString(), role);
                 }
             }
         } catch (UsernameNotFoundException e) {
