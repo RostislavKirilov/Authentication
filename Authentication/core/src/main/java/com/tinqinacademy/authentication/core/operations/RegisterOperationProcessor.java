@@ -8,6 +8,7 @@ import com.tinqinacademy.authentication.api.exceptions.UsernameAlreadyExistsExce
 import com.tinqinacademy.authentication.api.operations.register.operation.RegisterOperation;
 import com.tinqinacademy.authentication.api.operations.register.input.RegisterInput;
 import com.tinqinacademy.authentication.api.operations.register.output.RegisterOutput;
+import com.tinqinacademy.authentication.core.events.RegistrationEvent;
 import com.tinqinacademy.authentication.core.services.EmailService;
 import com.tinqinacademy.authentication.persistance.entities.User;
 import com.tinqinacademy.authentication.persistance.enums.Role;
@@ -15,11 +16,13 @@ import com.tinqinacademy.authentication.persistance.repositories.UserRepository;
 import io.vavr.control.Either;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -29,12 +32,12 @@ public class RegisterOperationProcessor extends BaseOperation implements Registe
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public RegisterOperationProcessor( Validator validator,
-                                       ConversionService conversionService,
-                                       ErrorMapper errorMapper,
-                                       UserRepository userRepository,
-                                       BCryptPasswordEncoder passwordEncoder,
-                                       EmailService emailService) {
+    public RegisterOperationProcessor(Validator validator,
+                                      ConversionService conversionService,
+                                      ErrorMapper errorMapper,
+                                      UserRepository userRepository,
+                                      BCryptPasswordEncoder passwordEncoder,
+                                      EmailService emailService) {
         super(validator, conversionService, errorMapper);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -42,7 +45,7 @@ public class RegisterOperationProcessor extends BaseOperation implements Registe
     }
 
     @Override
-    public Either<Errors, RegisterOutput> process ( RegisterInput input ) {
+    public Either<Errors, RegisterOutput> process(RegisterInput input) {
         try {
             if (userRepository.existsByUsername(input.getUsername())) {
                 throw new UsernameAlreadyExistsException("Username already exists: " + input.getUsername());
@@ -66,7 +69,12 @@ public class RegisterOperationProcessor extends BaseOperation implements Registe
             savedUser.setConfirmationExpiry(expiryTime);
             userRepository.save(savedUser);
 
-            emailService.sendRegistrationEmail(input.getEmail(), confirmationCode);
+            // асинхронно изпращане;
+            CompletableFuture<Void> emailFuture = emailService.sendRegistrationEmail(input.getEmail(), confirmationCode);
+
+            // за синхронно изчакване на завършването на асинхронната операция,
+            // което гарантира, че имейлът е изпратен преди да приключи обработката на регистрацията.
+            emailFuture.join();
 
             RegisterOutput registerOutput = RegisterOutput.builder()
                     .userId(savedUser.getId().toString())

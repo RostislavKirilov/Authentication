@@ -1,4 +1,7 @@
+C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\entities\BlacklistedToken.java
 C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\entities\RoleType.java
 C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\entities\User.java
 C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\enums\Role.java
+C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\repositories\BlacklistedTokenRepository.java
+C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\repositories\RoleTypeRepository.java
 C:\Users\35989\Documents\Authentication\Authentication\persistence\src\main\java\com\tinqinacademy\authentication\persistance\repositories\UserRepository.java

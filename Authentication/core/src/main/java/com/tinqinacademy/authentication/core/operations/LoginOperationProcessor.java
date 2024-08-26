@@ -19,6 +19,7 @@ import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -73,16 +74,25 @@ public class LoginOperationProcessor extends BaseOperation implements LoginOpera
                     }
 
                     String userId = customUserDetails.getUserId().toString();
-                    String jwtToken = generateJwtToken(customUserDetails.getUsername(), userId);
+                    String role = customUserDetails.getAuthorities().stream()
+                            .filter(authority -> authority instanceof SimpleGrantedAuthority)
+                            .map(authority -> ((SimpleGrantedAuthority) authority).getAuthority())
+                            .findFirst()
+                            .orElse("USER"); // Можете да зададете стойност по подразбиране или да хвърлите изключение
+
+                    String jwtToken = generateJwtToken(customUserDetails.getUsername(), userId, role);
                     return LoginOutput.builder().jwtToken(jwtToken).build();
                 })
                 .toEither()
                 .mapLeft(this::mapExceptionToErrors);
     }
 
-    private String generateJwtToken(String username, String userId) {
-        return jwtTokenProvider.generateToken(username, userId);
+
+
+    private String generateJwtToken(String username, String userId, String role) {
+        return jwtTokenProvider.generateToken(username, userId, role);
     }
+
 
     private Errors mapExceptionToErrors(Throwable throwable) {
         return exceptionMappings

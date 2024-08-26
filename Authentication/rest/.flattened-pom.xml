@@ -2,7 +2,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.tinqinacademy.authentication.rest</groupId>
+  <groupId>com.tinqinacademy.authentication</groupId>
   <artifactId>rest</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <licenses>
@@ -13,7 +13,7 @@
   </licenses>
   <dependencies>
     <dependency>
-      <groupId>com.tinqinacademy.authentication.core</groupId>
+      <groupId>com.tinqinacademy.authentication</groupId>
       <artifactId>core</artifactId>
       <version>0.0.1-SNAPSHOT</version>
       <scope>compile</scope>
@@ -83,6 +83,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-mail</artifactId>
       <version>3.3.2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vavr</groupId>
+      <artifactId>vavr</artifactId>
+      <version>0.10.3</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>

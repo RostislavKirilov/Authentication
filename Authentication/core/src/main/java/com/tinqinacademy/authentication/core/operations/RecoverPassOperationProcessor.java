@@ -24,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class RecoverPassOperationProcessor extends BaseOperation implements RecoverPassOperation {
@@ -69,7 +70,8 @@ public class RecoverPassOperationProcessor extends BaseOperation implements Reco
 
         userRepository.save(user);
 
-        emailService.sendNewPasswordEmail(user.getEmail(), newPassword);
+        // Публикуване на събитието за възстановяване на парола
+        CompletableFuture<Void> emailFuture = emailService.sendNewPasswordEmail(user.getEmail(), newPassword);
 
         return Either.right(RecoverPassOutput.builder().message("Recovery email sent").build());
     }

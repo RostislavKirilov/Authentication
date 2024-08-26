@@ -30,55 +30,43 @@ public class JwtTokenProvider {
 
 
     //BASE64 - декодира ключа от пропъртитата
-    private SecretKey getSignInKey() {
+    private SecretKey getSignInKey () {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes); // преобразува декодираното в ключ
     }
 
-    public String generateToken(String username, String userId, String role) {
+    public String generateToken ( String username, String userId, String role ) {
         return Jwts.builder()
                 .claim("userId", userId)
                 .claim("username", username)
-                .claim("role", role) // Добавяне на ролята в токена
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 300000))
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
-//    public boolean validateToken(String token) {
-//        try {
-//            Jwts.parser()
-//                    .verifyWith(getSignInKey())
-//                    .build()
-//                    .parseSignedClaims(token);
-//            return true;
-//        } catch (JwtException | IllegalArgumentException e) {
-//            return false;
-//        }
-//    }
-
     public boolean validateToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(getSignInKey())
+                    .verifyWith(getSignInKey())
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             if (blacklistedTokenRepository.existsById(token)) {
                 return false;
             }
 
-            return true;
+            Date expirationDate = claims.getExpiration();
+            return expirationDate != null && expirationDate.after(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
 
-
-    public Authentication getAuthentication(String token) {
+    public Authentication getAuthentication ( String token ) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSignInKey())
                 .build()
@@ -91,16 +79,16 @@ public class JwtTokenProvider {
 
     public String getRoleFromToken(String token) {
         Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        String role = claims.get("role", String.class);
-        System.out.println("Extracted role: " + role); // Лог на извлечената роля
-        return role;
+        return claims.get("role", String.class);
     }
 
-    public Date getExpirationDateFromToken(String token) {
+
+    public Date getExpirationDateFromToken ( String token ) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSignInKey())
                 .build()
@@ -119,5 +107,4 @@ public class JwtTokenProvider {
 
         return claims.get("username", String.class);
     }
-
 }

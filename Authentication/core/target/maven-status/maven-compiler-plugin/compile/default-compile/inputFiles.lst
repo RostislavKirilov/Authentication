@@ -1,2 +1,14 @@
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\ChangePassOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\DemoteOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\LoginOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\LogoutOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\PromoteOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\RecoverPassOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\operations\RegisterOperationProcessor.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\scheduler\BlacklistCleanupScheduler.java
 C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\services\AuthenticationService.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\services\CustomUserDetails.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\services\CustomUserDetailsService.java
 C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\services\EmailService.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\services\PasswordGenerator.java
+C:\Users\35989\Documents\Authentication\Authentication\core\src\main\java\com\tinqinacademy\authentication\core\util\JwtTokenProvider.java
