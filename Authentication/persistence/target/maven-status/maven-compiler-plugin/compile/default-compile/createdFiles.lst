@@ -1,6 +1,10 @@
-com\tinqinacademy\authentication\persistance\entities\User$UserBuilder.class
+com\tinqinacademy\authentication\persistance\entities\BlacklistedToken.class
 com\tinqinacademy\authentication\persistance\entities\RoleType$RoleTypeBuilder.class
-com\tinqinacademy\authentication\persistance\enums\Role.class
+com\tinqinacademy\authentication\persistance\repositories\BlacklistedTokenRepository.class
 com\tinqinacademy\authentication\persistance\entities\RoleType.class
 com\tinqinacademy\authentication\persistance\repositories\UserRepository.class
 com\tinqinacademy\authentication\persistance\entities\User.class
+com\tinqinacademy\authentication\persistance\entities\BlacklistedToken$BlacklistedTokenBuilder.class
+com\tinqinacademy\authentication\persistance\entities\User$UserBuilder.class
+com\tinqinacademy\authentication\persistance\enums\Role.class
+com\tinqinacademy\authentication\persistance\repositories\RoleTypeRepository.class

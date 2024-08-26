@@ -1,2 +1,15 @@
-com\tinqinacademy\authentication\core\services\EmailService.class
+com\tinqinacademy\authentication\core\services\CustomUserDetailsService.class
+com\tinqinacademy\authentication\core\util\JwtTokenProvider.class
+com\tinqinacademy\authentication\core\operations\DemoteOperationProcessor.class
+com\tinqinacademy\authentication\core\services\PasswordGenerator.class
+com\tinqinacademy\authentication\core\scheduler\BlacklistCleanupScheduler.class
+com\tinqinacademy\authentication\core\operations\LogoutOperationProcessor.class
 com\tinqinacademy\authentication\core\services\AuthenticationService.class
+com\tinqinacademy\authentication\core\operations\ChangePassOperationProcessor.class
+com\tinqinacademy\authentication\core\services\CustomUserDetails.class
+com\tinqinacademy\authentication\core\services\CustomUserDetails$CustomUserDetailsBuilder.class
+com\tinqinacademy\authentication\core\operations\LoginOperationProcessor.class
+com\tinqinacademy\authentication\core\operations\RecoverPassOperationProcessor.class
+com\tinqinacademy\authentication\core\operations\RegisterOperationProcessor.class
+com\tinqinacademy\authentication\core\services\EmailService.class
+com\tinqinacademy\authentication\core\operations\PromoteOperationProcessor.class
